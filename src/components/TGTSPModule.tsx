@@ -20,6 +20,7 @@ import {
   calculateAverageAnnualGrowthRate,
   formatVND,
 } from "../utils/calculations";
+import { TGTSPSectorCharts } from "./TGTSPSectorCharts";
 
 interface TGTSPModuleProps {
   commune: CommuneProfile;
@@ -300,6 +301,9 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Recharts Economic Sector Structure Analysis */}
+      <TGTSPSectorCharts commune={commune} />
 
       {/* Main Table of TGTSP */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">

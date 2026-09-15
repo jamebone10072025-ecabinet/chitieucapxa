@@ -28,6 +28,7 @@ import {
 } from "../utils/calculations";
 import { HouseholdSurveyModal } from "./HouseholdSurveyModal";
 import { AISurveyScannerModal } from "./AISurveyScannerModal";
+import { TNBQHistoryChart } from "./TNBQHistoryChart";
 
 interface TNBQModuleProps {
   commune: CommuneProfile;
@@ -276,6 +277,9 @@ export const TNBQModule: React.FC<TNBQModuleProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Historical TNBQ Recharts Line Chart */}
+      <TNBQHistoryChart commune={commune} onUpdateCommune={onUpdateCommune} />
 
       {/* Surveys List & Filters */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">

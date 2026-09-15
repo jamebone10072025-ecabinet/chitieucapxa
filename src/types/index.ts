@@ -164,6 +164,15 @@ export interface HouseholdSurveyRecord {
   isVerified: boolean;
 }
 
+export interface TNBQYearlyRecord {
+  year: number; // Năm thống kê (ví dụ: 2021, 2022, 2023, 2024, 2025, 2026)
+  tnbqMillionVND: number; // Thu nhập bình quân đầu người (Triệu đồng/người/năm)
+  ntmStandardMillionVND?: number; // Ngưỡng chuẩn tiêu chí Nông thôn mới năm đó (Triệu đồng)
+  growthRatePercent?: number; // Tốc độ tăng trưởng so với năm trước (%)
+  sampleSize?: number; // Cỡ mẫu điều tra (hộ)
+  notes?: string; // Ghi chú sự kiện/chính sách
+}
+
 export interface CommuneProfile {
   id: string;
   communeName: string;
@@ -184,4 +193,7 @@ export interface CommuneProfile {
 
   // Chỉ tiêu 2: Danh sách các phiếu điều tra mẫu hộ gia đình
   surveys: HouseholdSurveyRecord[];
+
+  // Lịch sử biến động TNBQ qua các năm
+  tnbqHistory?: TNBQYearlyRecord[];
 }

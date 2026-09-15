@@ -21,6 +21,8 @@ import {
   calculateCommuneTNBQ,
   formatVND,
 } from "../utils/calculations";
+import { TGTSPSectorCharts } from "./TGTSPSectorCharts";
+import { TNBQHistoryChart } from "./TNBQHistoryChart";
 
 interface CommuneSummaryReportProps {
   commune: CommuneProfile;
@@ -35,6 +37,8 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isEditingReport, setIsEditingReport] = useState(false);
   const [includeInPrint, setIncludeInPrint] = useState(true);
+  const [showChartInReport, setShowChartInReport] = useState(true);
+  const [showTNBQChartInReport, setShowTNBQChartInReport] = useState(true);
 
   // Tính tổng TGTSP
   let totalCurrentPrice = 0;
@@ -234,9 +238,24 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
 
         {/* SECTION 1: TGTSP */}
         <div className="space-y-3 pt-2">
-          <h3 className="font-bold text-sm uppercase text-slate-900 border-b pb-1">
-            I. KẾT QUẢ BIÊN SOẠN TỔNG GIÁ TRỊ SẢN PHẨM TRÊN ĐỊA BÀN (PHỤ LỤC I)
-          </h3>
+          <div className="flex items-center justify-between border-b pb-1">
+            <h3 className="font-bold text-sm uppercase text-slate-900">
+              I. KẾT QUẢ BIÊN SOẠN TỔNG GIÁ TRỊ SẢN PHẨM TRÊN ĐỊA BÀN (PHỤ LỤC I)
+            </h3>
+            <button
+              onClick={() => setShowChartInReport(!showChartInReport)}
+              className="print:hidden text-xs text-amber-700 hover:text-amber-900 font-semibold flex items-center gap-1 cursor-pointer bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
+            >
+              {showChartInReport ? "Ẩn biểu đồ Recharts" : "Hiện biểu đồ Recharts"}
+            </button>
+          </div>
+
+          {showChartInReport && (
+            <div className="print:hidden my-3">
+              <TGTSPSectorCharts commune={commune} />
+            </div>
+          )}
+
           <p className="text-xs font-sans text-slate-700 leading-relaxed">
             Tổng giá trị sản phẩm trên địa bàn {commune.communeName} năm {commune.reportingYear} được tổng hợp từ các đơn vị kinh tế thường trú theo các phương pháp tính trực tiếp và phân bổ gián tiếp:
           </p>
@@ -311,9 +330,24 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
 
         {/* SECTION 2: TNBQ */}
         <div className="space-y-3 pt-4">
-          <h3 className="font-bold text-sm uppercase text-slate-900 border-b pb-1">
-            II. KẾT QUẢ ĐIỀU TRA THU NHẬP BÌNH QUÂN ĐẦU NGƯỜI (PHỤ LỤC II)
-          </h3>
+          <div className="flex items-center justify-between border-b pb-1">
+            <h3 className="font-bold text-sm uppercase text-slate-900">
+              II. KẾT QUẢ ĐIỀU TRA THU NHẬP BÌNH QUÂN ĐẦU NGƯỜI (PHỤ LỤC II)
+            </h3>
+            <button
+              onClick={() => setShowTNBQChartInReport(!showTNBQChartInReport)}
+              className="print:hidden text-xs text-emerald-700 hover:text-emerald-900 font-semibold flex items-center gap-1 cursor-pointer bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+            >
+              {showTNBQChartInReport ? "Ẩn biểu đồ Recharts TNBQ" : "Hiện biểu đồ Recharts TNBQ"}
+            </button>
+          </div>
+
+          {showTNBQChartInReport && (
+            <div className="print:hidden my-3">
+              <TNBQHistoryChart commune={commune} />
+            </div>
+          )}
+
           <p className="text-xs font-sans text-slate-700 leading-relaxed">
             Biểu kết quả thu nhập bình quân đầu người trên địa bàn {commune.communeName} (theo mẫu biểu quy định tại Mục VI.3 Phụ lục II):
           </p>

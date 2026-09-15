@@ -5,6 +5,7 @@ import { TNBQModule } from "./components/TNBQModule";
 import { CommuneSummaryReport } from "./components/CommuneSummaryReport";
 import { HandbookModule } from "./components/HandbookModule";
 import { AIConsultantModal } from "./components/AIConsultantModal";
+import { InputGuidePanel } from "./components/InputGuidePanel";
 import { CommuneProfile } from "./types";
 import { MOCK_COMMUNES } from "./data/mockCommunes";
 import { calculateTGTSPRow, calculateCommuneTNBQ } from "./utils/calculations";
@@ -115,6 +116,13 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {activeTab !== "handbook" && (
+          <InputGuidePanel
+            currentTab={activeTab}
+            onSwitchTab={setActiveTab}
+          />
+        )}
+
         {activeTab === "tgtsp" && (
           <TGTSPModule
             commune={activeCommune}
