@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 
 interface InputGuidePanelProps {
-  currentTab?: "tgtsp" | "tnbq" | "report" | "handbook";
-  onSwitchTab?: (tab: "tgtsp" | "tnbq" | "report" | "handbook") => void;
+  currentTab?: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook";
+  onSwitchTab?: (tab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook") => void;
 }
 
 export const InputGuidePanel: React.FC<InputGuidePanelProps> = ({

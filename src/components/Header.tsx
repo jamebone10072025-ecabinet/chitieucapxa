@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Info,
   BookOpen,
+  GitCompare,
 } from "lucide-react";
 import { CommuneProfile } from "../types";
 import { formatVND } from "../utils/calculations";
@@ -18,12 +19,13 @@ export interface HeaderProps {
   communesList?: CommuneProfile[];
   allCommunes?: CommuneProfile[];
   onSelectCommune: (id: string) => void;
-  activeTab: "tgtsp" | "tnbq" | "report" | "handbook";
-  onTabChange?: (tab: "tgtsp" | "tnbq" | "report" | "handbook") => void;
-  onSelectTab?: (tab: "tgtsp" | "tnbq" | "report" | "handbook") => void;
+  activeTab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook";
+  onTabChange?: (tab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook") => void;
+  onSelectTab?: (tab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook") => void;
   onOpenAIConsult?: () => void;
   onOpenAI?: () => void;
   onPrintReport?: () => void;
+  onOpenExport?: () => void;
   totalCurrentTGTSP?: number;
   averagePerCapitaMillion?: number;
 }
@@ -39,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAIConsult,
   onOpenAI,
   onPrintReport,
+  onOpenExport,
   totalCurrentTGTSP = 0,
   averagePerCapitaMillion = 0,
 }) => {
@@ -129,6 +132,16 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2 pt-3 md:pt-0">
               <button
                 type="button"
+                onClick={onOpenExport}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-750 text-white px-3 py-2 rounded-lg transition shadow-xs cursor-pointer border border-emerald-500"
+                title="Xuất dữ liệu chỉ tiêu (TGTSP và TNBQ) thành file Excel (.xlsx) hoặc CSV"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
+                <span>Xuất Excel / CSV</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={handleOpenAI}
                 className="flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 px-3 py-2 rounded-lg transition shadow-sm cursor-pointer"
                 title="Hỏi đáp & thẩm định biểu mẫu theo QĐ 2545/QĐ-BTC"
@@ -189,6 +202,18 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            onClick={() => handleTabChange("cross-commune")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
+              activeTab === "cross-commune"
+                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
+                : "text-slate-300 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <GitCompare className="w-4 h-4" />
+            <span>4. So sánh & Tổng hợp liên xã</span>
+          </button>
+
+          <button
             onClick={() => handleTabChange("handbook")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
               activeTab === "handbook"
@@ -197,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>4. Cẩm nang QĐ 2545 & 14 nguồn biểu mẫu</span>
+            <span>5. Cẩm nang QĐ 2545 & 14 nguồn biểu mẫu</span>
           </button>
         </div>
       </div>

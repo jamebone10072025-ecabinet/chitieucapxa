@@ -3,14 +3,16 @@ import { Header } from "./components/Header";
 import { TGTSPModule } from "./components/TGTSPModule";
 import { TNBQModule } from "./components/TNBQModule";
 import { CommuneSummaryReport } from "./components/CommuneSummaryReport";
+import { CrossCommuneAnalysis } from "./components/CrossCommuneAnalysis";
 import { HandbookModule } from "./components/HandbookModule";
 import { AIConsultantModal } from "./components/AIConsultantModal";
+import { ExportDataModal } from "./components/ExportDataModal";
 import { InputGuidePanel } from "./components/InputGuidePanel";
 import { CommuneProfile } from "./types";
 import { MOCK_COMMUNES } from "./data/mockCommunes";
 import { calculateTGTSPRow, calculateCommuneTNBQ } from "./utils/calculations";
 
-const STORAGE_KEY = "QD2545_COMMUNES_DATA_V3";
+const STORAGE_KEY = "QD2545_COMMUNES_DATA_V5";
 
 export default function App() {
   // Load communes from localStorage or initialize with mock
@@ -19,14 +21,8 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasGiaLaiCommunes = parsed.some(
-            (c: CommuneProfile) =>
-              c.communeName?.includes("Quy Nhơn") || c.communeName?.includes("Pleiku")
-          );
-          if (hasGiaLaiCommunes) {
-            return parsed;
-          }
+        if (Array.isArray(parsed) && parsed.length >= MOCK_COMMUNES.length) {
+          return parsed;
         }
       }
     } catch (e) {
@@ -39,9 +35,10 @@ export default function App() {
     communes[0]?.id || "commune-quy-nhon"
   );
   const [activeTab, setActiveTab] = useState<
-    "tgtsp" | "tnbq" | "report" | "handbook"
+    "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook"
   >("tgtsp");
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Sync to localStorage
   useEffect(() => {
@@ -110,13 +107,14 @@ export default function App() {
         onOpenAIConsult={() => setIsAIModalOpen(true)}
         onOpenAI={() => setIsAIModalOpen(true)}
         onPrintReport={handlePrintReport}
+        onOpenExport={() => setIsExportModalOpen(true)}
         totalCurrentTGTSP={totalCurrentTGTSP}
         averagePerCapitaMillion={averagePerCapitaMillion}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {activeTab !== "handbook" && (
+        {activeTab !== "handbook" && activeTab !== "cross-commune" && (
           <InputGuidePanel
             currentTab={activeTab}
             onSwitchTab={setActiveTab}
@@ -141,6 +139,15 @@ export default function App() {
           <CommuneSummaryReport commune={activeCommune} />
         )}
 
+        {activeTab === "cross-commune" && (
+          <CrossCommuneAnalysis
+            communes={communes}
+            currentCommuneId={activeCommune.id}
+            onSelectCommune={setActiveCommuneId}
+            onNavigateToTab={setActiveTab}
+          />
+        )}
+
         {activeTab === "handbook" && <HandbookModule />}
       </main>
 
@@ -160,6 +167,13 @@ export default function App() {
       <AIConsultantModal
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
+        commune={activeCommune}
+      />
+
+      {/* Export Data Modal (Excel / CSV) */}
+      <ExportDataModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
         commune={activeCommune}
       />
     </div>

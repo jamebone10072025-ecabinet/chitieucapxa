@@ -12,6 +12,7 @@ import {
   Award,
   TrendingUp,
   FileSpreadsheet,
+  Download,
   ShieldCheck,
   Scale,
   Sparkles,
@@ -29,6 +30,7 @@ import {
 import { HouseholdSurveyModal } from "./HouseholdSurveyModal";
 import { AISurveyScannerModal } from "./AISurveyScannerModal";
 import { TNBQHistoryChart } from "./TNBQHistoryChart";
+import { exportCommuneToExcel, exportTNBQSurveysToCSV } from "../utils/exportData";
 
 interface TNBQModuleProps {
   commune: CommuneProfile;
@@ -318,6 +320,27 @@ export const TNBQModule: React.FC<TNBQModuleProps> = ({
                 </option>
               ))}
             </select>
+
+            {/* Export Buttons */}
+            <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200">
+              <button
+                onClick={() => exportCommuneToExcel(commune)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-2xs transition"
+                title="Xuất dữ liệu điều tra TNBQ và toàn bộ chỉ tiêu xã sang file Excel (.xlsx)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
+                <span className="hidden md:inline">Xuất Excel (.xlsx)</span>
+                <span className="md:hidden">Excel</span>
+              </button>
+              <button
+                onClick={() => exportTNBQSurveysToCSV(commune)}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition"
+                title="Tải danh sách mẫu hộ Phụ lục II dạng file CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>CSV</span>
+              </button>
+            </div>
           </div>
         </div>
 

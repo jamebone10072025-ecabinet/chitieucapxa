@@ -11,6 +11,8 @@ import {
   Calculator,
   ArrowUpDown,
   FileCheck,
+  FileSpreadsheet,
+  Download,
 } from "lucide-react";
 import { TGTSPRow, CalculationMethod, CommuneProfile } from "../types";
 import {
@@ -21,6 +23,7 @@ import {
   formatVND,
 } from "../utils/calculations";
 import { TGTSPSectorCharts } from "./TGTSPSectorCharts";
+import { exportCommuneToExcel, exportTGTSPToCSV } from "../utils/exportData";
 
 interface TGTSPModuleProps {
   commune: CommuneProfile;
@@ -314,9 +317,27 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
               Bảng tính chi tiết theo từng ngành kinh tế (giá hiện hành & so sánh)
             </h3>
           </div>
-          <span className="text-xs text-slate-500 font-medium">
-            Đơn vị tính: Triệu đồng
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+              ĐVT: Triệu đồng
+            </span>
+            <button
+              onClick={() => exportCommuneToExcel(commune)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-2xs transition"
+              title="Xuất bảng tính TGTSP và toàn bộ dữ liệu xã sang file Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
+              <span>Xuất Excel (.xlsx)</span>
+            </button>
+            <button
+              onClick={() => exportTGTSPToCSV(commune)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition"
+              title="Tải bảng tính Phụ lục I dạng file CSV"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>CSV</span>
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

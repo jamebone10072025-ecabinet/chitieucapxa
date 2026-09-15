@@ -13,6 +13,7 @@ import {
   Check,
   Edit3,
   Eye,
+  FileSpreadsheet,
 } from "lucide-react";
 import { CommuneProfile } from "../types";
 import {
@@ -23,6 +24,7 @@ import {
 } from "../utils/calculations";
 import { TGTSPSectorCharts } from "./TGTSPSectorCharts";
 import { TNBQHistoryChart } from "./TNBQHistoryChart";
+import { exportCommuneToExcel } from "../utils/exportData";
 
 interface CommuneSummaryReportProps {
   commune: CommuneProfile;
@@ -148,6 +150,14 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
                 <span>AI Soạn Thuyết minh Báo cáo</span>
               </>
             )}
+          </button>
+          <button
+            onClick={() => exportCommuneToExcel(commune)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer transition border border-emerald-500"
+            title="Xuất toàn bộ sổ bảng tính Excel (.xlsx) gồm 4 Sheet theo chuẩn QĐ 2545/QĐ-BTC"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
+            <span>Xuất Excel (.xlsx)</span>
           </button>
           <button
             onClick={handleExportJSON}
