@@ -10,18 +10,28 @@ import {
   Info,
   BookOpen,
   GitCompare,
+  ShieldCheck,
 } from "lucide-react";
 import { CommuneProfile } from "../types";
 import { formatVND } from "../utils/calculations";
+
+export type AppNavTab =
+  | "tgtsp"
+  | "tnbq"
+  | "report"
+  | "audit"
+  | "geomap"
+  | "cross-commune"
+  | "handbook";
 
 export interface HeaderProps {
   commune: CommuneProfile;
   communesList?: CommuneProfile[];
   allCommunes?: CommuneProfile[];
   onSelectCommune: (id: string) => void;
-  activeTab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook";
-  onTabChange?: (tab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook") => void;
-  onSelectTab?: (tab: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook") => void;
+  activeTab: AppNavTab;
+  onTabChange?: (tab: AppNavTab) => void;
+  onSelectTab?: (tab: AppNavTab) => void;
   onOpenAIConsult?: () => void;
   onOpenAI?: () => void;
   onPrintReport?: () => void;
@@ -31,7 +41,7 @@ export interface HeaderProps {
 }
 
 interface NavItem {
-  id: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook";
+  id: AppNavTab;
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -61,15 +71,22 @@ const NAV_ITEMS: NavItem[] = [
     tooltip: "Biểu báo cáo cấp xã & Thẩm định Tiêu chí 10 Nông thôn mới",
   },
   {
+    id: "audit",
+    title: "4. Kiểm toán cấu trúc",
+    subtitle: "Logic & cân đối tự động",
+    icon: ShieldCheck,
+    tooltip: "Kiểm toán số liệu tự động bằng cấu trúc, cân đối vĩ mô - vi mô theo QĐ 2545",
+  },
+  {
     id: "cross-commune",
-    title: "4. Đối sánh liên xã",
+    title: "5. Đối sánh liên xã",
     subtitle: "Tổng hợp kinh tế cấp xã",
     icon: GitCompare,
     tooltip: "So sánh & Tổng hợp đối sánh các xã/phường trên địa bàn",
   },
   {
     id: "handbook",
-    title: "5. Cẩm nang QĐ 2545",
+    title: "6. Cẩm nang QĐ 2545",
     subtitle: "14 nguồn biểu mẫu",
     icon: BookOpen,
     tooltip: "Cẩm nang tra cứu quy chuẩn QĐ 2545 và 14 nguồn biểu mẫu",
@@ -97,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handlePrint = onPrintReport || (() => window.print());
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-800 shadow-lg">
+    <header className="bg-slate-900 text-white border-b border-slate-800 shadow-md">
       {/* Top Ministerial Banner */}
       <div className="bg-red-900 text-white py-1 px-4 text-xs border-b border-red-800/60">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
@@ -214,7 +231,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label="Thanh điều hướng nghiệp vụ chính"
           className="w-full mt-2.5 pt-2 border-t border-slate-800"
         >
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5 md:gap-2 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 md:gap-2 w-full">
             {NAV_ITEMS.map((item) => {
               const isActive = activeTab === item.id;
               const Icon = item.icon;
@@ -223,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleTabChange(item.id)}
-                  className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 text-left cursor-pointer border select-none ${
+                  className={`group relative flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 text-left cursor-pointer border select-none ${
                     isActive
                       ? "bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-md ring-1 ring-amber-400/50"
                       : "bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-600"
@@ -237,12 +254,12 @@ export const Header: React.FC<HeaderProps> = ({
                         : "bg-slate-900/70 text-amber-400 group-hover:text-amber-300"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-1">
                       <span
-                        className={`text-xs md:text-sm font-bold truncate leading-tight ${
+                        className={`text-xs font-bold truncate leading-tight ${
                           isActive ? "text-slate-950" : "text-white"
                         }`}
                       >
@@ -253,7 +270,7 @@ export const Header: React.FC<HeaderProps> = ({
                       )}
                     </div>
                     <p
-                      className={`text-[11px] truncate leading-tight mt-0.5 ${
+                      className={`text-[10px] truncate leading-tight mt-0.5 ${
                         isActive ? "text-slate-900/90 font-medium" : "text-slate-400"
                       }`}
                     >

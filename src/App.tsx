@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Header } from "./components/Header";
+import { Header, AppNavTab } from "./components/Header";
 import { TGTSPModule } from "./components/TGTSPModule";
 import { TNBQModule } from "./components/TNBQModule";
 import { CommuneSummaryReport } from "./components/CommuneSummaryReport";
+import { StructuralAuditModule } from "./components/StructuralAuditModule";
+import { CommuneGeoMapModule } from "./components/CommuneGeoMapModule";
 import { CrossCommuneAnalysis } from "./components/CrossCommuneAnalysis";
 import { HandbookModule } from "./components/HandbookModule";
 import { AIConsultantModal } from "./components/AIConsultantModal";
@@ -34,9 +36,7 @@ export default function App() {
   const [activeCommuneId, setActiveCommuneId] = useState<string>(
     communes[0]?.id || "commune-quy-nhon"
   );
-  const [activeTab, setActiveTab] = useState<
-    "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook"
-  >("tgtsp");
+  const [activeTab, setActiveTab] = useState<AppNavTab>("tgtsp");
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -114,12 +114,15 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {activeTab !== "handbook" && activeTab !== "cross-commune" && (
-          <InputGuidePanel
-            currentTab={activeTab}
-            onSwitchTab={setActiveTab}
-          />
-        )}
+        {activeTab !== "handbook" &&
+          activeTab !== "cross-commune" &&
+          activeTab !== "geomap" &&
+          activeTab !== "audit" && (
+            <InputGuidePanel
+              currentTab={activeTab as any}
+              onSwitchTab={setActiveTab as any}
+            />
+          )}
 
         {activeTab === "tgtsp" && (
           <TGTSPModule
@@ -137,6 +140,23 @@ export default function App() {
 
         {activeTab === "report" && (
           <CommuneSummaryReport commune={activeCommune} />
+        )}
+
+        {activeTab === "audit" && (
+          <StructuralAuditModule
+            commune={activeCommune}
+            onUpdateCommune={handleUpdateCommune}
+            onNavigateToTab={setActiveTab}
+          />
+        )}
+
+        {activeTab === "geomap" && (
+          <CommuneGeoMapModule
+            communes={communes}
+            currentCommuneId={activeCommune.id}
+            onSelectCommune={setActiveCommuneId}
+            onNavigateToTab={setActiveTab}
+          />
         )}
 
         {activeTab === "cross-commune" && (

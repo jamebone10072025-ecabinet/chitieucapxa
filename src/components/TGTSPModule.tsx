@@ -13,6 +13,8 @@ import {
   FileCheck,
   FileSpreadsheet,
   Download,
+  Globe,
+  Sparkles,
 } from "lucide-react";
 import { TGTSPRow, CalculationMethod, CommuneProfile } from "../types";
 import {
@@ -24,6 +26,7 @@ import {
 } from "../utils/calculations";
 import { TGTSPSectorCharts } from "./TGTSPSectorCharts";
 import { exportCommuneToExcel, exportTGTSPToCSV } from "../utils/exportData";
+import { AIMarketPriceModal } from "./AIMarketPriceModal";
 
 interface TGTSPModuleProps {
   commune: CommuneProfile;
@@ -36,6 +39,8 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
 }) => {
   const [editingRow, setEditingRow] = useState<TGTSPRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
+  const [marketCommodity, setMarketCommodity] = useState("Cà phê vối (nhân xô)");
 
   // Tính tổng TGTSP hiện hành và so sánh
   let totalCurrentPrice = 0;
@@ -321,6 +326,18 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
             <span className="text-xs text-slate-500 font-medium hidden sm:inline">
               ĐVT: Triệu đồng
             </span>
+            <button
+              type="button"
+              onClick={() => {
+                setMarketCommodity("Cà phê vối (nhân xô)");
+                setIsMarketModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+              title="Tra cứu đơn giá nông sản & vật tư thị trường thời gian thực với Google Search"
+            >
+              <Globe className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Tra cứu giá thị trường (AI)</span>
+            </button>
             <button
               onClick={() => exportCommuneToExcel(commune)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-2xs transition"
@@ -636,6 +653,17 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
                         }
                         className="w-full px-2.5 py-1.5 border rounded bg-white"
                       />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMarketCommodity(editingRow.industryName || "Cà phê vối");
+                          setIsMarketModalOpen(true);
+                        }}
+                        className="text-[10px] text-emerald-700 hover:text-emerald-900 font-semibold flex items-center gap-1 mt-1 cursor-pointer"
+                      >
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
+                        <span>Tra cứu giá thị trường (Google Search)</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -926,6 +954,14 @@ export const TGTSPModule: React.FC<TGTSPModuleProps> = ({
           </div>
         </div>
       )}
+
+      {/* Real-time Market Price Modal powered by Google Search Grounding */}
+      <AIMarketPriceModal
+        isOpen={isMarketModalOpen}
+        onClose={() => setIsMarketModalOpen(false)}
+        commune={commune}
+        initialCommodity={marketCommodity}
+      />
     </div>
   );
 };

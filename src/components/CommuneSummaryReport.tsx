@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Printer,
   Download,
@@ -14,6 +14,11 @@ import {
   Edit3,
   Eye,
   FileSpreadsheet,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react";
 import { CommuneProfile } from "../types";
 import {
@@ -41,6 +46,63 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
   const [includeInPrint, setIncludeInPrint] = useState(true);
   const [showChartInReport, setShowChartInReport] = useState(true);
   const [showTNBQChartInReport, setShowTNBQChartInReport] = useState(true);
+
+  // Audio Speech state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleToggleSpeech = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !aiReportMarkdown) return;
+
+    if (isSpeaking) {
+      if (isPaused) {
+        window.speechSynthesis.resume();
+        setIsPaused(false);
+      } else {
+        window.speechSynthesis.pause();
+        setIsPaused(true);
+      }
+    } else {
+      window.speechSynthesis.cancel();
+      const cleanText = aiReportMarkdown
+        .replace(/[#*_`>-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = "vi-VN";
+      utterance.rate = 1.0;
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+
+      window.speechSynthesis.speak(utterance);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    }
+  };
+
+  const handleStopSpeech = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+    setIsPaused(false);
+  };
 
   // Tính tổng TGTSP
   let totalCurrentPrice = 0;
@@ -452,6 +514,45 @@ export const CommuneSummaryReport: React.FC<CommuneSummaryReportProps> = ({
                   <Edit3 className="w-3 h-3" />
                   <span>{isEditingReport ? "Xem trước" : "Chỉnh sửa"}</span>
                 </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleToggleSpeech}
+                    className={`px-2.5 py-1 text-[11px] border rounded flex items-center gap-1 cursor-pointer transition font-medium ${
+                      isSpeaking
+                        ? "bg-rose-50 border-rose-300 text-rose-700 shadow-xs"
+                        : "bg-emerald-50 border-emerald-300 hover:bg-emerald-100 text-emerald-800"
+                    }`}
+                    title={isSpeaking ? (isPaused ? "Tiếp tục đọc" : "Tạm dừng đọc") : "Nghe đọc bản thuyết minh bằng giọng nói AI"}
+                  >
+                    {isSpeaking ? (
+                      isPaused ? (
+                        <>
+                          <Play className="w-3 h-3 text-emerald-600 fill-current" />
+                          <span>Tiếp tục</span>
+                        </>
+                      ) : (
+                        <>
+                          <Pause className="w-3 h-3 text-rose-600 fill-current" />
+                          <span>Tạm dừng</span>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Volume2 className="w-3 h-3 text-emerald-600" />
+                        <span>Nghe đọc (TTS)</span>
+                      </>
+                    )}
+                  </button>
+                  {isSpeaking && (
+                    <button
+                      onClick={handleStopSpeech}
+                      className="p-1 text-[11px] border border-slate-300 rounded bg-white hover:bg-slate-100 text-slate-600 cursor-pointer"
+                      title="Dừng đọc"
+                    >
+                      <Square className="w-3 h-3 text-slate-600 fill-current" />
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={handleCopyReport}
                   className="px-2 py-1 text-[11px] border border-slate-300 rounded bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 cursor-pointer"

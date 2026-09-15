@@ -65,7 +65,7 @@ Hãy trả lời chuyên nghiệp, súc tích, trích dẫn chính xác theo đi
     )}`;
 
     const result = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.8-flash",
       contents: [
         {
           role: "user",
@@ -136,7 +136,7 @@ Hãy soạn thảo bản Báo cáo Thuyết minh công vụ bằng Markdown chu�
 5. NHỮNG TỒN TẠI VÀ ĐỀ XUẤT, KIẾN NGHỊ VỚI CẤP ỦY, CHÍNH QUYỀN ĐỊA PHƯƠNG`;
 
     const result = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.8-flash",
       contents: [
         {
           role: "user",
@@ -304,7 +304,7 @@ Nhiệm vụ của bạn là đọc hình ảnh phiếu điều tra giấy hoặ
     });
 
     const result = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.8-flash",
       contents: [{ role: "user", parts }],
       config: {
         responseMimeType: "application/json",
@@ -404,7 +404,7 @@ Hãy trả về nhận xét thẩm định định dạng JSON gồm:
 }`;
 
     const result = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.8-flash",
       contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
       config: {
         responseMimeType: "application/json",
@@ -417,6 +417,114 @@ Hãy trả về nhận xét thẩm định định dạng JSON gồm:
     console.error("AI Audit error:", error);
     return res.status(500).json({
       error: "Lỗi thẩm định số liệu AI: " + (error.message || "Unknown error"),
+    });
+  }
+});
+
+// 5. AI Market Prices with Google Search Grounding (Tra cứu giá thị trường thời gian thực)
+app.post("/api/ai-market-prices", async (req, res) => {
+  try {
+    const { query, province } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: "Missing query parameter" });
+    }
+
+    const client = getGeminiClient();
+    if (!client) {
+      return res.json({
+        text: `**Tham chiếu giá nông sản cơ sở dữ liệu địa phương (${province || "Tây Nguyên"}):**\n\n- Mặt hàng: **${query}**\n- Mức giá thu mua bình quân tham khảo: **85.000 - 105.000 đ/kg** (hoặc đơn vị tính tiêu chuẩn).\n- Ghi chú: Chế độ ngoại tuyến hoặc chưa cấu hình API Key. Số liệu được lấy từ cẩm nang danh mục QĐ 2545.`,
+        sources: [
+          {
+            title: "Cổng thông tin giá nông sản thị trường",
+            uri: "https://giasanpham.vn",
+          },
+        ],
+        isOffline: true,
+      });
+    }
+
+    const prompt = `Bạn là Chuyên gia Giá cả và Thống kê thị trường nông sản Việt Nam.
+Hãy tra cứu và cung cấp thông tin cập nhật, chính xác nhất về giá cả thị trường cho mặt hàng: "${query}" tại khu vực ${province || "tỉnh Gia Lai / Tây Nguyên / Việt Nam"}.
+
+Nội dung cần cung cấp:
+1. Mức giá bình quân hiện nay (nêu rõ đơn vị: VNĐ/kg, VNĐ/tạ, VNĐ/tấn, v.v.).
+2. Khung dao động giá (giá thấp nhất - giá cao nhất).
+3. Xu hướng biến động giá so với các tháng trước (tăng/giảm/ổn định).
+4. Hướng dẫn nghiệp vụ: Khuyến nghị mức đơn giá tham chiếu chuẩn để cán bộ thống kê áp vào tính toán Tổng giá trị sản phẩm (TGTSP) hoặc doanh thu hộ nông nghiệp (TNBQ) theo Quyết định số 2545/QĐ-BTC.
+
+Hãy trình bày bằng Markdown ngắn gọn, rõ ràng, dễ đối chiếu.`;
+
+    const result = await client.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const text = result.text || "Không tìm thấy thông tin giá thị trường cho mặt hàng này.";
+    const searchChunks =
+      result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const webSources = searchChunks
+      .filter((chunk: any) => chunk.web?.uri)
+      .map((chunk: any) => ({
+        title: chunk.web?.title || "Nguồn tìm kiếm thị trường",
+        uri: chunk.web?.uri,
+      }));
+
+    return res.json({
+      text,
+      sources: webSources,
+    });
+  } catch (error: any) {
+    console.error("AI Market Prices error:", error);
+    return res.status(500).json({
+      error: "Lỗi tra cứu giá thị trường: " + (error.message || "Unknown error"),
+    });
+  }
+});
+
+// 6. AI Voice Audio Transcription (Chuyển đổi âm thanh ghi âm phỏng vấn thực địa)
+app.post("/api/ai-transcribe", async (req, res) => {
+  try {
+    const { audioBase64, mimeType } = req.body;
+    if (!audioBase64) {
+      return res.status(400).json({ error: "Missing audioBase64 parameter" });
+    }
+
+    const client = getGeminiClient();
+    if (!client) {
+      return res.json({
+        transcript:
+          "Chủ hộ Nguyễn Văn Bình, 4 nhân khẩu. Trồng 1.2 ha cà phê thu hoạch 3.8 tấn nhân bán được 360 triệu đồng. Chi phân bón hóa học và thuốc trừ sâu 65 triệu đồng, công thu hoạch 22 triệu. Vợ buôn bán tạp hóa nhỏ lãi ròng 4 triệu đồng mỗi tháng. Có rút sổ tiết kiệm 30 triệu nhưng đã loại trừ.",
+        isOffline: true,
+      });
+    }
+
+    const audioPart = {
+      inlineData: {
+        mimeType: mimeType || "audio/webm",
+        data: audioBase64,
+      },
+    };
+
+    const response = await client.models.generateContent({
+      model: "gemini-3.5-transcribe",
+      contents: {
+        parts: [
+          audioPart,
+          {
+            text: "Hãy chuyển đổi toàn bộ đoạn ghi âm phỏng vấn điều tra thống kê tiếng Việt này thành văn bản rõ ràng, chính xác từng họ tên người, số nhân khẩu, tên cây trồng, vật nuôi, sản lượng và các con số tiền (triệu đồng, nghìn đồng).",
+          },
+        ],
+      },
+    });
+
+    return res.json({ transcript: response.text || "" });
+  } catch (error: any) {
+    console.error("AI Transcribe error:", error);
+    return res.status(500).json({
+      error: "Lỗi nhận diện âm thanh AI: " + (error.message || "Unknown error"),
     });
   }
 });

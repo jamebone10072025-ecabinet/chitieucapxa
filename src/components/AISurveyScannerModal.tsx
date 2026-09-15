@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
   Camera,
@@ -10,6 +10,11 @@ import {
   X,
   ArrowRight,
   RefreshCw,
+  Mic,
+  MicOff,
+  Square,
+  Volume2,
+  Radio,
 } from "lucide-react";
 import { CommuneProfile, HouseholdSurveyRecord } from "../types";
 
@@ -28,7 +33,7 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const [mode, setMode] = useState<"image" | "text">("image");
+  const [mode, setMode] = useState<"image" | "voice" | "text">("image");
   const [selectedImage, setSelectedImage] = useState<{
     base64: string;
     mimeType: string;
@@ -41,7 +46,159 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
   const [extractedSurvey, setExtractedSurvey] =
     useState<HouseholdSurveyRecord | null>(null);
 
+  // Voice recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (_) {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (_) {}
+      }
+    };
+  }, []);
+
+  const handleStartVoiceRecording = async () => {
+    setError(null);
+    setRecordingSeconds(0);
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    let hasStartedLiveSpeech = false;
+
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = "vi-VN";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event: any) => {
+          let currentTranscript = "";
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript + " ";
+          }
+          setNotesText(currentTranscript.trim());
+        };
+
+        recognition.onerror = (err: any) => {
+          console.warn("Speech recognition error:", err);
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+        hasStartedLiveSpeech = true;
+      } catch (err) {
+        console.warn("Could not start Web Speech API:", err);
+      }
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+
+        // If live speech didn't transcribe or was empty, send audio to Gemini transcribe endpoint
+        if (!notesText.trim() && audioBlob.size > 0) {
+          setIsTranscribingAudio(true);
+          try {
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+              const base64Data = (reader.result as string).split(",")[1];
+              const res = await fetch("/api/ai-transcribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  audioBase64: base64Data,
+                  mimeType: "audio/webm",
+                }),
+              });
+              const data = await res.json();
+              if (data.transcript) {
+                setNotesText(data.transcript);
+              }
+            };
+          } catch (e: any) {
+            console.error("Transcribe error:", e);
+          } finally {
+            setIsTranscribingAudio(false);
+          }
+        }
+      };
+
+      mediaRecorder.start(500);
+      mediaRecorderRef.current = mediaRecorder;
+      setIsRecording(true);
+
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    } catch (micError: any) {
+      if (!hasStartedLiveSpeech) {
+        setError(
+          "Không thể truy cập Microphone thiết bị: " +
+            (micError.message || "Vui lòng cho phép quyền ghi âm trình duyệt.")
+        );
+      }
+    }
+  };
+
+  const handleStopVoiceRecording = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (_) {}
+      recognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (_) {}
+    }
+    setIsRecording(false);
+  };
+
+  const handleVoiceSample = () => {
+    setNotesText(
+      `Phỏng vấn thực địa hộ ông Đinh Văn Thơm (Tổ 3, ${commune.communeName}):
+- Chủ hộ: Đinh Văn Thơm (1975). Vợ là Đỗ Thị Nga (1979). Hai con là Đinh Văn Lâm (2003, đang học nghề) và Đinh Thị Hoa (2008, học sinh).
+- Thu nhập từ cây trồng: Hộ có 2 ha cà phê thu được 4.2 tấn nhân, bán với giá 95.000 đ/kg được khoảng 399 triệu đồng. Chi phí phân bón NPK và phân chuồng hết 75 triệu, chi thuê máy xịt thuốc và xăng dầu tưới nước 25 triệu, chi nhân công hái cà phê 35 triệu đồng.
+- Chăn nuôi: Nuôi 3 con bò thịt, trong năm bán 1 con bò được 22 triệu đồng. Tiền mua rơm và thức ăn tinh 4 triệu đồng.
+- Thu nhập tiền lương: Vợ Đỗ Thị Nga làm tạp vụ trường tiểu học lương 5 triệu/tháng (cả năm 60 triệu).
+- Lưu ý cán bộ: Hộ có vay ngân hàng chính sách 50 triệu làm chuồng bò, đã loại trừ hoàn toàn không tính vào thu nhập theo QĐ 2545.`
+    );
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,8 +237,12 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
       setError("Vui lòng tải lên hoặc chọn ảnh chụp phiếu điều tra giấy.");
       return;
     }
-    if (mode === "text" && !notesText.trim()) {
-      setError("Vui lòng nhập nội dung phỏng vấn hoặc bấm 'Dùng mẫu ghi chép thực địa'.");
+    if ((mode === "text" || mode === "voice") && !notesText.trim()) {
+      setError(
+        mode === "voice"
+          ? "Vui lòng bấm 'Bắt đầu ghi âm', nói nội dung phỏng vấn hoặc chọn 'Dùng mẫu phỏng vấn thực địa'."
+          : "Vui lòng nhập nội dung phỏng vấn hoặc bấm 'Dùng mẫu ghi chép thực địa'."
+      );
       return;
     }
 
@@ -144,11 +305,11 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
               <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
                 <span>AI Smart Scanner - Số hóa Phiếu Hộ CAPI</span>
                 <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                  Gemini 3.8 Multimodal
+                  Gemini 3.8 Multimodal & Voice
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Tự động nhận diện ảnh chụp phiếu giấy hoặc ghi chú phỏng vấn và phân loại 7 mục thu nhập QĐ 2545
+                Nhận diện ảnh phiếu, ghi âm giọng nói phỏng vấn thực địa hoặc nhập ghi chú để bóc tách 7 mục thu nhập QĐ 2545
               </p>
             </div>
           </div>
@@ -161,8 +322,8 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
         </div>
 
         {/* Mode Selector */}
-        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-lg">
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1 bg-slate-200/80 p-1 rounded-lg">
             <button
               onClick={() => setMode("image")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition ${
@@ -172,7 +333,18 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
               }`}
             >
               <Camera className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Quét ảnh phiếu điều tra</span>
+              <span>Quét ảnh phiếu</span>
+            </button>
+            <button
+              onClick={() => setMode("voice")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition ${
+                mode === "voice"
+                  ? "bg-white text-emerald-800 font-bold shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+              <span>Ghi âm giọng nói (Mới)</span>
             </button>
             <button
               onClick={() => setMode("text")}
@@ -183,9 +355,19 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Nhập nhanh văn bản / Ghi chép</span>
+              <span>Nhập văn bản</span>
             </button>
           </div>
+
+          {mode === "voice" && (
+            <button
+              onClick={handleVoiceSample}
+              className="text-emerald-700 hover:text-emerald-800 text-xs font-medium underline flex items-center gap-1 cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Dùng mẫu phỏng vấn thực địa</span>
+            </button>
+          )}
 
           {mode === "text" && (
             <button
@@ -272,6 +454,72 @@ export const AISurveyScannerModal: React.FC<AISurveyScannerModalProps> = ({
                     rows={2}
                     className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                   />
+                </div>
+              ) : mode === "voice" ? (
+                <div className="space-y-4">
+                  {/* Voice recording console */}
+                  <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white text-center space-y-4 border border-slate-700 shadow-md">
+                    <div className="flex items-center justify-center gap-2 text-xs font-medium text-emerald-400">
+                      <Radio className="w-4 h-4 animate-pulse" />
+                      <span>Thu âm phỏng vấn trực tiếp tại cơ sở</span>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-4">
+                      {!isRecording ? (
+                        <button
+                          type="button"
+                          onClick={handleStartVoiceRecording}
+                          className="flex items-center gap-2.5 px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm rounded-full shadow-lg hover:shadow-rose-600/30 transition cursor-pointer"
+                        >
+                          <Mic className="w-5 h-5" />
+                          <span>Bắt đầu thu âm & nói</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleStopVoiceRecording}
+                          className="flex items-center gap-2.5 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-full shadow-lg transition cursor-pointer animate-pulse"
+                        >
+                          <Square className="w-4 h-4 fill-current" />
+                          <span>Dừng thu âm ({recordingSeconds}s)</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {isRecording && (
+                      <div className="flex items-center justify-center gap-1.5 text-xs text-rose-400">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                        <span>Đang lắng nghe giọng nói... Hãy đọc tự nhiên về nhân khẩu, các cây trồng, vật nuôi và chi phí của hộ.</span>
+                      </div>
+                    )}
+
+                    {isTranscribingAudio && (
+                      <div className="flex items-center justify-center gap-2 text-xs text-amber-300">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>AI đang xử lý nhận dạng âm thanh tiếng Việt...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Transcribed text area */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <Volume2 className="w-4 h-4 text-emerald-600" />
+                        <span>Văn bản ghi nhận từ giọng nói (có thể chỉnh sửa trực tiếp):</span>
+                      </label>
+                      <span className="text-[11px] text-slate-400">
+                        {notesText.length} ký tự
+                      </span>
+                    </div>
+                    <textarea
+                      value={notesText}
+                      onChange={(e) => setNotesText(e.target.value)}
+                      placeholder="Bấm nút 'Bắt đầu thu âm' ở trên hoặc bấm 'Dùng mẫu phỏng vấn thực địa' để thử nghiệm..."
+                      rows={7}
+                      className="w-full text-xs p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 leading-relaxed font-sans bg-slate-50 focus:bg-white"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">

@@ -52,7 +52,7 @@ interface CrossCommuneAnalysisProps {
   communes: CommuneProfile[];
   currentCommuneId: string;
   onSelectCommune: (communeId: string) => void;
-  onNavigateToTab: (tab: "tgtsp" | "tnbq" | "report") => void;
+  onNavigateToTab: (tab: "tgtsp" | "tnbq" | "report" | "audit" | "geomap") => void;
 }
 
 // Bảng màu trực quan chuẩn thống kê
@@ -389,12 +389,22 @@ export const CrossCommuneAnalysis: React.FC<CrossCommuneAnalysisProps> = ({
 
             <button
               type="button"
+              onClick={() => onNavigateToTab("audit")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition cursor-pointer"
+              title="Kiểm toán tự động cấu trúc số liệu theo QĐ 2545"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Kiểm toán</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleExportInterCommuneExcel}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition cursor-pointer"
               title="Xuất bảng tổng hợp & đối sánh liên xã ra sổ Excel (.xlsx)"
             >
               <FileSpreadsheet className="w-4 h-4" />
-              <span>Xuất Excel Tổng Hợp Liên Xã</span>
+              <span>Xuất Excel</span>
             </button>
 
             <button

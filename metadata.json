@@ -1,6 +1,6 @@
 {
   "name": "Hệ thống Biên soạn 02 Chỉ tiêu Thống kê Cấp xã (QĐ 2545/QĐ-BTC)",
   "description": "Ứng dụng hỗ trợ biên soạn, tính toán, kiểm tra logic, phân tích đối sánh và tổng hợp báo cáo liên xã về Tổng giá trị sản phẩm (TGTSP) và Thu nhập bình quân đầu người (TNBQ) cấp xã theo Quyết định số 2545/QĐ-BTC của Bộ Tài chính.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
