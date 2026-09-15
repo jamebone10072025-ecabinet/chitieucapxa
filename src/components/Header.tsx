@@ -102,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   {list.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.communeName} ({c.districtName}, {c.provinceName})
+                      {c.communeName} - {c.provinceName?.replace(/^Tỉnh\s*/i, "tỉnh ") || "tỉnh Gia Lai"}
                     </option>
                   ))}
                 </select>

@@ -14,6 +14,7 @@ import {
   FileSpreadsheet,
   ShieldCheck,
   Scale,
+  Sparkles,
 } from "lucide-react";
 import {
   CommuneProfile,
@@ -26,6 +27,7 @@ import {
   formatVND,
 } from "../utils/calculations";
 import { HouseholdSurveyModal } from "./HouseholdSurveyModal";
+import { AISurveyScannerModal } from "./AISurveyScannerModal";
 
 interface TNBQModuleProps {
   commune: CommuneProfile;
@@ -38,6 +40,7 @@ export const TNBQModule: React.FC<TNBQModuleProps> = ({
 }) => {
   const [selectedSurvey, setSelectedSurvey] = useState<HouseholdSurveyRecord | null>(null);
   const [isSurveyModalOpen, setIsSurveyModalOpen] = useState(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterVillage, setFilterVillage] = useState("ALL");
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
@@ -172,6 +175,15 @@ export const TNBQModule: React.FC<TNBQModuleProps> = ({
             >
               <Scale className="w-4 h-4 text-slate-600" />
               <span>Quyền số mẫu (W_ci = {calculatedWci.toFixed(2)})</span>
+            </button>
+
+            <button
+              onClick={() => setIsScannerModalOpen(true)}
+              className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300 font-semibold px-3.5 py-2 rounded-lg text-xs transition shadow-xs cursor-pointer"
+              title="Quét ảnh chụp phiếu điều tra giấy hoặc dán ghi chép phỏng vấn để AI tự động trích xuất"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-600" />
+              <span>AI Smart Scanner (Quét ảnh / Nhập nhanh)</span>
             </button>
 
             <button
@@ -564,6 +576,17 @@ export const TNBQModule: React.FC<TNBQModuleProps> = ({
           onSave={handleSaveSurvey}
         />
       )}
+
+      {/* AI Smart Scanner Modal */}
+      <AISurveyScannerModal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        commune={commune}
+        onApplySurvey={(extracted) => {
+          setSelectedSurvey(extracted);
+          setIsSurveyModalOpen(true);
+        }}
+      />
     </div>
   );
 };

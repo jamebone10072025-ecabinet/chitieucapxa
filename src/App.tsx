@@ -9,7 +9,7 @@ import { CommuneProfile } from "./types";
 import { MOCK_COMMUNES } from "./data/mockCommunes";
 import { calculateTGTSPRow, calculateCommuneTNBQ } from "./utils/calculations";
 
-const STORAGE_KEY = "QD2545_COMMUNES_DATA_V1";
+const STORAGE_KEY = "QD2545_COMMUNES_DATA_V3";
 
 export default function App() {
   // Load communes from localStorage or initialize with mock
@@ -19,7 +19,13 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const hasGiaLaiCommunes = parsed.some(
+            (c: CommuneProfile) =>
+              c.communeName?.includes("Quy Nhơn") || c.communeName?.includes("Pleiku")
+          );
+          if (hasGiaLaiCommunes) {
+            return parsed;
+          }
         }
       }
     } catch (e) {
@@ -29,7 +35,7 @@ export default function App() {
   });
 
   const [activeCommuneId, setActiveCommuneId] = useState<string>(
-    communes[0]?.id || "commune-tan-phong"
+    communes[0]?.id || "commune-quy-nhon"
   );
   const [activeTab, setActiveTab] = useState<
     "tgtsp" | "tnbq" | "report" | "handbook"
