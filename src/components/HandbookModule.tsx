@@ -67,8 +67,8 @@ export const HandbookModule: React.FC = () => {
           </div>
         </div>
 
-        {/* Section Tabs */}
-        <div className="flex items-center gap-2 mt-4 overflow-x-auto text-xs font-semibold">
+        {/* Section Tabs - Non-scrolling flex wrap layout */}
+        <div className="flex flex-wrap items-center gap-2 mt-4 text-xs font-semibold">
           <button
             onClick={() => setActiveSection("sources")}
             className={`px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap ${

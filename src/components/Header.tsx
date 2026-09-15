@@ -30,6 +30,52 @@ export interface HeaderProps {
   averagePerCapitaMillion?: number;
 }
 
+interface NavItem {
+  id: "tgtsp" | "tnbq" | "report" | "cross-commune" | "handbook";
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  tooltip: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    id: "tgtsp",
+    title: "1. Chỉ tiêu TGTSP",
+    subtitle: "Tổng giá trị sản phẩm",
+    icon: Building2,
+    tooltip: "Biên soạn Tổng giá trị sản phẩm cấp xã (QĐ 2545/QĐ-BTC Phụ lục I)",
+  },
+  {
+    id: "tnbq",
+    title: "2. Chỉ tiêu TNBQ",
+    subtitle: "Thu nhập bình quân",
+    icon: Users,
+    tooltip: "Biên soạn Thu nhập bình quân đầu người cấp xã (QĐ 2545/QĐ-BTC Phụ lục II)",
+  },
+  {
+    id: "report",
+    title: "3. Biểu mẫu & NTM",
+    subtitle: "Tiêu chí số 10 cấp xã",
+    icon: FileSpreadsheet,
+    tooltip: "Biểu báo cáo cấp xã & Thẩm định Tiêu chí 10 Nông thôn mới",
+  },
+  {
+    id: "cross-commune",
+    title: "4. Đối sánh liên xã",
+    subtitle: "Tổng hợp kinh tế cấp xã",
+    icon: GitCompare,
+    tooltip: "So sánh & Tổng hợp đối sánh các xã/phường trên địa bàn",
+  },
+  {
+    id: "handbook",
+    title: "5. Cẩm nang QĐ 2545",
+    subtitle: "14 nguồn biểu mẫu",
+    icon: BookOpen,
+    tooltip: "Cẩm nang tra cứu quy chuẩn QĐ 2545 và 14 nguồn biểu mẫu",
+  },
+];
+
 export const Header: React.FC<HeaderProps> = ({
   commune,
   communesList,
@@ -51,15 +97,15 @@ export const Header: React.FC<HeaderProps> = ({
   const handlePrint = onPrintReport || (() => window.print());
 
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 shadow-md">
+    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-800 shadow-lg">
       {/* Top Ministerial Banner */}
-      <div className="bg-red-800 text-white py-1.5 px-4 text-xs">
+      <div className="bg-red-900 text-white py-1 px-4 text-xs border-b border-red-800/60">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-medium tracking-wide">
             <span className="bg-amber-400 text-red-950 font-bold px-1.5 py-0.5 rounded text-[10px]">
               QUY CHUẨN QUỐC GIA
             </span>
-            <span>HỆ THỐNG BIÊN SOẠN THỐNG KÊ CẤP XÃ - THEO QUYẾT ĐỊNH SỐ 2545/QĐ-BTC BỘ TÀI CHÍNH</span>
+            <span className="text-red-100">BIÊN SOẠN THỐNG KÊ CẤP XÃ - THEO QUYẾT ĐỊNH SỐ 2545/QĐ-BTC BỘ TÀI CHÍNH</span>
           </div>
           <div className="flex items-center gap-4 text-slate-200 text-xs">
             <span>Kỳ báo cáo: Năm {commune?.reportingYear || 2026}</span>
@@ -163,68 +209,62 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 mt-3 border-t border-slate-800 pt-2 overflow-x-auto text-sm font-medium">
-          <button
-            onClick={() => handleTabChange("tgtsp")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
-              activeTab === "tgtsp"
-                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
-                : "text-slate-300 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>1. Tổng giá trị sản phẩm (TGTSP)</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("tnbq")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
-              activeTab === "tnbq"
-                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
-                : "text-slate-300 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>2. Thu nhập bình quân đầu người (TNBQ)</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("report")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
-              activeTab === "report"
-                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
-                : "text-slate-300 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>3. Biểu báo cáo cấp xã & tiêu chí NTM</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("cross-commune")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
-              activeTab === "cross-commune"
-                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
-                : "text-slate-300 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <GitCompare className="w-4 h-4" />
-            <span>4. So sánh & Tổng hợp liên xã</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange("handbook")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md transition whitespace-nowrap cursor-pointer ${
-              activeTab === "handbook"
-                ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
-                : "text-slate-300 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>5. Cẩm nang QĐ 2545 & 14 nguồn biểu mẫu</span>
-          </button>
-        </div>
+        {/* Navigation Tabs - Fixed Grid, Absolutely No Horizontal Scrollbar */}
+        <nav
+          aria-label="Thanh điều hướng nghiệp vụ chính"
+          className="w-full mt-2.5 pt-2 border-t border-slate-800"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5 md:gap-2 w-full">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeTab === item.id;
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleTabChange(item.id)}
+                  className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 text-left cursor-pointer border select-none ${
+                    isActive
+                      ? "bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-md ring-1 ring-amber-400/50"
+                      : "bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-600"
+                  }`}
+                  title={item.tooltip}
+                >
+                  <div
+                    className={`p-1.5 rounded-md shrink-0 transition-colors ${
+                      isActive
+                        ? "bg-slate-950/15 text-slate-950"
+                        : "bg-slate-900/70 text-amber-400 group-hover:text-amber-300"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span
+                        className={`text-xs md:text-sm font-bold truncate leading-tight ${
+                          isActive ? "text-slate-950" : "text-white"
+                        }`}
+                      >
+                        {item.title}
+                      </span>
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-950 shrink-0" />
+                      )}
+                    </div>
+                    <p
+                      className={`text-[11px] truncate leading-tight mt-0.5 ${
+                        isActive ? "text-slate-900/90 font-medium" : "text-slate-400"
+                      }`}
+                    >
+                      {item.subtitle}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       </div>
     </header>
   );

@@ -490,46 +490,46 @@ export const CrossCommuneAnalysis: React.FC<CrossCommuneAnalysisProps> = ({
         </div>
       </div>
 
-      {/* 2. Navigation Sub-Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-2xs">
-        <div className="flex items-center gap-2 overflow-x-auto text-sm font-medium">
+      {/* 2. Navigation Sub-Tabs - Fixed grid, no scrollbar */}
+      <div className="border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-2xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm font-medium">
           <button
             type="button"
             onClick={() => setActiveSubTab("matrix")}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 font-semibold transition cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 border-b-2 font-semibold transition cursor-pointer text-center ${
               activeSubTab === "matrix"
-                ? "border-amber-600 text-amber-800 bg-amber-50/40"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                ? "border-amber-600 text-amber-800 bg-amber-50/50 rounded-t-md"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-md"
             }`}
           >
-            <Layers className="w-4 h-4" />
-            <span>Bảng Ma Trận So Sánh Liên Xã ({communeMetrics.length} xã/phường)</span>
+            <Layers className="w-4 h-4 shrink-0" />
+            <span className="truncate">Ma trận đối sánh ({communeMetrics.length} xã)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("charts")}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 font-semibold transition cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 border-b-2 font-semibold transition cursor-pointer text-center ${
               activeSubTab === "charts"
-                ? "border-amber-600 text-amber-800 bg-amber-50/40"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                ? "border-amber-600 text-amber-800 bg-amber-50/50 rounded-t-md"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-md"
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
-            <span>Biểu Đồ Trực Quan Hóa Đối Sánh</span>
+            <BarChart3 className="w-4 h-4 shrink-0" />
+            <span className="truncate">Biểu đồ & Cơ cấu</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveSubTab("evaluation")}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 font-semibold transition cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 border-b-2 font-semibold transition cursor-pointer text-center ${
               activeSubTab === "evaluation"
-                ? "border-amber-600 text-amber-800 bg-amber-50/40"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                ? "border-amber-600 text-amber-800 bg-amber-50/50 rounded-t-md"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-md"
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Báo Cáo Đánh Giá & Đề Xuất Cấp Xã</span>
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span className="truncate">Báo cáo & Đề xuất cấp xã</span>
           </button>
         </div>
       </div>
